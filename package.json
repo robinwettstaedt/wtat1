@@ -1,0 +1,39 @@
+{
+    "name": "wtat1",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "npx babel src --out-dir build --extensions '.ts,.tsx,.js,.jsx'",
+        "dev": "nodemon --exec npm run restart",
+        "restart": "rimraf build && npm run build && npm start",
+        "start": "node build/index.js",
+        "test": "NODE_ENV=testing jest -i --forceExit --detectOpenHandles --silent --watchAll"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/robinwettstaedt/wtat1.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/robinwettstaedt/wtat1/issues"
+    },
+    "homepage": "https://github.com/robinwettstaedt/wtat1#readme",
+    "devDependencies": {
+        "@babel/cli": "^7.17.10",
+        "@babel/core": "^7.17.10",
+        "@babel/preset-env": "^7.17.10",
+        "prettier": "^2.6.2",
+        "rimraf": "^3.0.2"
+    },
+    "dependencies": {
+        "body-parser": "^1.20.0",
+        "cookie-parser": "^1.4.6",
+        "cors": "^2.8.5",
+        "dotenv": "^16.0.0",
+        "express": "^4.18.1",
+        "morgan": "^1.10.0"
+    }
+}

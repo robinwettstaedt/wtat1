@@ -1,0 +1,10 @@
+{
+    "ignore": [".git", "node_modules/**/node_modules", "build"],
+    "verbose": true,
+    "runOnChangeOnly": false,
+    "watch": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+    "env": {
+        "NODE_ENV": "development"
+    },
+    "ext": "js,jsx,ts,tsx,json"
+}
