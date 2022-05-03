@@ -3,8 +3,13 @@
 import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { getNoteById } from './controllers/note.controller';
-import { sendWelcomeMessage } from './controllers/home.controller';
+import layouts from 'express-ejs-layouts';
+
+// local imports
+import errorController from './controllers/error.controller';
+import noteRouter from './routers/note.router';
+import homeRouter from './routers/home.router';
+import authRouter from './routers/auth.router';
 
 // initalize dotenv to be able to use hidden environment variables
 dotenv.config();
@@ -26,12 +31,35 @@ app.use(express.urlencoded({ extended: false }));
 // package for logging incoming requests
 app.use(morgan('dev'));
 
+// use express-ejs-layouts for layout templating
+app.use(layouts);
+
+// allow express to serve static files
+app.use(express.static('src/public'));
+
+// set the port variable in express
+app.set('port', process.env.PORT);
+
+// tell express to use the ejs library to render the views
+app.set('view engine', 'ejs');
+
+// tell express to change the default location of the view files
+app.set('views', 'src/views');
+
 // routes
-app.get('/', sendWelcomeMessage);
-app.get('/note/:id', getNoteById);
-app.use('*', (req, res) => res.status(404).json({ error: 'invalid route' }));
+app.use('/', homeRouter);
+
+app.use('/note', noteRouter);
+
+app.use('/auth', authRouter);
+
+// app.use('*', (req, res) => res.status(404).json({ error: 'invalid route' }));
+
+// error logging middleware
+app.use(errorController.respondNoResourceFound);
+app.use(errorController.respondInternalError);
 
 // have the app listen on the specified port
 app.listen(process.env.PORT, () => {
-    console.log(`REST API on http://localhost:${process.env.PORT}`);
+    console.log(`REST API on http://localhost:${app.get('port')}`);
 });

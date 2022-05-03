@@ -1,5 +1,18 @@
 'use strict';
 
-export const sendWelcomeMessage = (req, res) => {
-    return res.send('HELLO AND WELCOME!!!');
+const getMany = (req, res) => {
+    res.send('Hello and Welcome!');
 };
+
+const getOne = (req, res) => {
+    const name = req.params.name;
+    res.render('index', { name: name });
+};
+
+// combine all controllers onto a single object
+const homeController = {
+    getMany: getMany,
+    getOne: getOne,
+};
+
+export default homeController;
