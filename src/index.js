@@ -53,8 +53,6 @@ app.use('/note', noteRouter);
 
 app.use('/auth', authRouter);
 
-// app.use('*', (req, res) => res.status(404).json({ error: 'invalid route' }));
-
 // error logging middleware
 app.use(errorController.respondNoResourceFound);
 app.use(errorController.respondInternalError);
