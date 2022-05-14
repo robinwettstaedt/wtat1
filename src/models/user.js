@@ -1,18 +1,20 @@
-"use strict";
+'use strict';
 
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose from 'mongoose';
 
-const userSchema = new Schema({
-  username: {
-    type: String,
-    required: true
-  },
-  password: {
-    type: String,
-    required: true
-  }
-}, {timestamps: true });
+const userSchema = new mongoose.Schema(
+    {
+        username: {
+            type: String,
+            required: true,
+        },
+        password: {
+            type: String,
+            required: true,
+        },
+    },
+    { timestamps: true }
+);
 
 const User = mongoose.model('User', userSchema);
 

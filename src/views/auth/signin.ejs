@@ -1,9 +1,54 @@
-<form>
+<form action="http://localhost:3000/auth/signin" id="signin-form">
     <div class="container">
         <label>Username : </label>
         <input type="text" placeholder="Enter Username" name="username" required />
         <label>Password : </label>
         <input type="password" placeholder="Enter Password" name="password" required />
-        <button onsubmit="handleSubmit()" type="submit">Sign In!</button>
+        <button type="submit">Sign In!</button>
     </div>
 </form>
+
+<script>
+    // select the form
+    const form = document.getElementById('signin-form');
+
+    // add an EventListener for the submit of form data
+    form.addEventListener('submit', handleSubmit);
+
+    // function for handling the submitting of the form data
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+
+        const url = form.action;
+
+        try {
+            // his takes all the fields in the form and makes their values available through a `FormData` instance
+            const formData = new FormData(form);
+
+            // convert formData to plain object
+            const plainFormData = Object.fromEntries(formData.entries());
+
+            // convert object to JSON
+            const formDataJsonString = JSON.stringify(plainFormData);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: formDataJsonString,
+            });
+
+            // if we get an error status code back
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                throw new Error(errorMessage);
+            }
+
+            return response.json();
+        } catch (e) {}
+    }
+</script>
