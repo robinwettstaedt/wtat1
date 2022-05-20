@@ -11,6 +11,7 @@ import errorController from './controllers/error.controller';
 import noteRouter from './routers/note.router';
 import homeRouter from './routers/home.router';
 import authRouter from './routers/auth.router';
+import { protect } from './controllers/auth.controller';
 
 // initalize dotenv to be able to use hidden environment variables
 dotenv.config();
@@ -51,9 +52,11 @@ app.set('views', 'src/views');
 // routes
 app.use('/', homeRouter);
 
-app.use('/note', noteRouter);
-
 app.use('/auth', authRouter);
+
+app.use('/', protect);
+
+app.use('/note', noteRouter);
 
 // error logging middleware
 app.use(errorController.respondNoResourceFound);
