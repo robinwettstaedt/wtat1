@@ -48,7 +48,13 @@
                 throw new Error(errorMessage);
             }
 
-            return response.json();
-        } catch (e) {}
+            // parse the response message to get the route to redirect to from it
+            const message = await response.json();
+
+            // redirect to the route received in the response message
+            window.location.replace(message.message);
+        } catch (e) {
+            console.error(e);
+        }
     }
 </script>
