@@ -51,7 +51,7 @@ const signIn = async (req, res) => {
 
         // search for the user in the database
         const user = await User.findOne({
-            email: req.body.username,
+            username: req.body.username,
             password: req.body.password,
         }).exec();
 
