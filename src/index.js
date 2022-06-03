@@ -54,13 +54,10 @@ app.use('/', homeRouter);
 
 app.use('/auth', authRouter);
 
-<<<<<<< HEAD
-=======
 app.use('/', protect);
 
 app.use('/note', noteRouter);
 
->>>>>>> c39ec09b943b7d3964d9634ac4d280933afa8497
 // error logging middleware
 app.use(errorController.respondNoResourceFound);
 app.use(errorController.respondInternalError);

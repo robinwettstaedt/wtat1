@@ -43,28 +43,36 @@ const signUp = async (req, res) => {
 };
 
 const signIn = async (req, res) => {
-    try {
-        // if the email or password is missing in the request body the user can not be created
-        if (!req.body.username || !req.body.password) {
-            return res.status(400).send({ message: 'need email and password' });
-        }
+    // if the email or password is missing in the request body the user does not yet have an account
+    if (!req.body.username || !req.body.password) {
+        return res.status(400).send({ message: 'need email and password' });
+    }
 
+    try {
         // search for the user in the database
         const user = await User.findOne({
             username: req.body.username,
-            password: req.body.password,
         }).exec();
 
-        // if the user was found
-        if (user) {
-            // send a route to redirect to based on the user's username
-            return res.status(200).send({
-                message: `/name/${user.username}`,
+        if (!user) {
+            return res.status(404).send({
+                message: 'User not found',
             });
         }
 
-        // if no user was found
-        return res.status(401).end();
+        const match = await user.checkPassword(req.body.password);
+
+        if (!match) {
+            return res.status(401).send({
+                message: 'Invalid email and password combination',
+            });
+        }
+
+        // user was found and password entered is correct:
+        // send a route to redirect to based on the user's username
+        return res.status(200).send({
+            message: `/name/${user.username}`,
+        });
     } catch (e) {
         console.log(e);
         return res.status(400).end();
