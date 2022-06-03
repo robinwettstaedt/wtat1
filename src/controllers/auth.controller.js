@@ -1,6 +1,6 @@
 'use strict';
 
-import User from '../models/user';
+import User from '../models/user.model';
 
 export const createAccessToken = (user) =>
     jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET, {

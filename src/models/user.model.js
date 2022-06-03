@@ -1,6 +1,7 @@
 'use strict';
 
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema(
     {
@@ -50,10 +51,11 @@ userSchema.pre('save', function (next) {
     next();
 });
 
+// schema method for checking if the password entered by the login matches
 userSchema.methods.checkPassword = function (password) {
     const passwordHash = this.password;
     return new Promise((resolve, reject) => {
-        // eslint-disable-next-line
+        // compare the hash stored inside the existing user data with the password entered
         bcrypt.compare(password, passwordHash, (err, same) => {
             if (err) {
                 return reject(err);

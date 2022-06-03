@@ -54,7 +54,7 @@ app.use('/', homeRouter);
 
 app.use('/auth', authRouter);
 
-app.use('/', protect);
+// app.use('/', protect);
 
 app.use('/note', noteRouter);
 
