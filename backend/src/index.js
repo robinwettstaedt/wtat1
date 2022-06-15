@@ -3,6 +3,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import layouts from 'express-ejs-layouts';
 
 // local imports
@@ -18,6 +19,9 @@ dotenv.config();
 
 // get the app object from express
 const app = express();
+
+// cors
+app.use(cors());
 
 // disabling the express startup message (not necessary but saves log space in a production app)
 app.disable('x-powered-by');
