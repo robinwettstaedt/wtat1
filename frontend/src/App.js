@@ -1,5 +1,8 @@
+import { authContext } from './context/authContext';
+
 function App() {
-  return <div className="App">app</div>;
+  <authContext.Provider value={token}></authContext.Provider>;
+  return <div></div>;
 }
 
 export default App;
