@@ -1,17 +1,11 @@
 import express from 'express';
-import authController from '../controllers/auth.controller';
+import { signin, signup } from '../controllers/auth.controller';
 
 // create the router object
 const router = express.Router();
 
-router
-    .route('/signup')
-    .get(authController.renderSignUp)
-    .post(authController.signUp);
+router.route('/signup').post(signup);
 
-router
-    .route('/signin')
-    .get(authController.renderSignIn)
-    .post(authController.signIn);
+router.route('/signin').post(signin);
 
 export default router;

@@ -10,7 +10,6 @@ import layouts from 'express-ejs-layouts';
 import connectToMongoDB from './connection/connectToMongoDB';
 import errorController from './controllers/error.controller';
 import noteRouter from './routers/note.router';
-import homeRouter from './routers/home.router';
 import authRouter from './routers/auth.router';
 import { protect } from './controllers/auth.controller';
 
@@ -53,14 +52,13 @@ app.set('view engine', 'ejs');
 // tell express to change the default location of the view files
 app.set('views', 'src/views');
 
-// routes
-app.use('/', homeRouter);
+// require a signed in user for all requests
+app.use('/api', protect);
 
+// routes
 app.use('/auth', authRouter);
 
-// app.use('/', protect);
-
-app.use('/note', noteRouter);
+app.use('/api/note', noteRouter);
 
 // error logging middleware
 app.use(errorController.respondNoResourceFound);

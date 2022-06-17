@@ -1,9 +1,14 @@
-import React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import useAuth from './hooks/useAuth';
 
 function Signup() {
-  const [username, setUsername] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const navigate = useNavigate();
+  const { token, setToken } = useAuth();
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -11,7 +16,9 @@ function Signup() {
       username: username,
       password: password,
     });
-    console.log(response);
+
+    setToken(response.data.accessToken);
+    navigate('/');
   };
 
   const handleUsernameChange = (event) => {
@@ -22,7 +29,11 @@ function Signup() {
     setPassword(event.target.value);
   };
 
-  return (
+  return token ? (
+    <>
+      <h1>You are already logged in!</h1>
+    </>
+  ) : (
     <form onSubmit={handleSubmit}>
       <label>Username : </label>
       <input
