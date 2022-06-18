@@ -6,8 +6,10 @@ const router = express.Router();
 
 router.route('/').get(noteController.getMany).post(noteController.createOne);
 
-router.route('/:id').get(noteController.getOne);
-// .put(noteController.updateOne)
-// .delete(noteController.removeOne);
+router
+    .route('/:id')
+    .get(noteController.getOne)
+    .put(noteController.updateOne)
+    .delete(noteController.removeOne);
 
 export default router;

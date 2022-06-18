@@ -33,20 +33,23 @@ const getOne = (model) => async (req, res) => {
 
 const getMany = (model) => async (req, res) => {
     try {
-        // find all notes that have the current user as the value of their hasAccess field
-        const notes = await model
-            .find({ hasAccess: req.user._id })
-            .select('-__v')
-            .lean()
-            .exec();
+        console.log('inside getMany notes');
+        if (req.user) {
+            // find all notes that have the current user as the value of their hasAccess field
+            const notes = await model
+                .find({ hasAccess: req.user._id })
+                .select('-__v')
+                .lean()
+                .exec();
 
-        if (!notes) {
-            return res.status(404).end();
+            if (!notes) {
+                return res.status(404).end();
+            }
+
+            return res.status(200).json(notes);
+        } else {
+            return res.status(401).end();
         }
-
-        console.log(notes);
-
-        return res.status(200).json(notes);
     } catch (e) {
         console.log(e);
         return res.status(400).end();
@@ -94,13 +97,72 @@ const createOne = (model) => async (req, res) => {
     }
 };
 
+const updateOne = (model) => async (req, res) => {
+    try {
+        const noteUpdates = req.body;
+        noteUpdates.lastUpdatedBy = req.user._id;
+
+        // updates to the hasAccess fields are handled by different routes
+        if (noteUpdates.hasAccess) {
+            delete noteUpdates.hasAccess;
+        }
+
+        // update the document
+        const updatedDoc = await model
+            .findOneAndUpdate(
+                { _id: req.params.id, hasAccess: req.user._id },
+                noteUpdates,
+                { new: true }
+            )
+            .select('-__v')
+            .exec();
+
+        if (!updatedDoc) {
+            const doc = await model.findById(req.params.id).lean().exec();
+
+            if (!doc) {
+                return res.status(404).end();
+            }
+
+            return res.status(403).end();
+        }
+
+        return res.status(200).json(updatedDoc);
+    } catch (e) {
+        return res.status(400).end();
+    }
+};
+
+const removeOne = (model) => async (req, res) => {
+    try {
+        const removed = await model
+            .findOneAndRemove({ _id: req.params.id, hasAccess: req.user._id })
+            .select('-__v')
+            .exec();
+
+        if (!removed) {
+            const doc = await model.findById(req.params.id).lean().exec();
+
+            if (!doc) {
+                return res.status(404).end();
+            }
+
+            return res.status(403).end();
+        }
+
+        return res.status(200).json(removed);
+    } catch (e) {
+        return res.status(400).end();
+    }
+};
+
 // combine all controllers onto a single object
 const noteController = (model) => ({
     getOne: getOne(model),
     getMany: getMany(model),
     createOne: createOne(model),
-    // updateOne: updateOne(model),
-    // removeOne: removeOne(model),
+    updateOne: updateOne(model),
+    removeOne: removeOne(model),
 });
 
 export default noteController(Note);
