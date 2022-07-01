@@ -4,12 +4,14 @@ import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import layouts from 'express-ejs-layouts';
+import passport from 'passport';
+import session from 'express-session';
+import local from './strategies/local';
 
 // local imports
 import connectToMongoDB from './connection/connectToMongoDB';
-import errorController from './controllers/error.controller';
 import noteRouter from './routers/note.router';
+import notebookRouter from './routers/notebook.router';
 import authRouter from './routers/auth.router';
 import { protect } from './controllers/auth.controller';
 
@@ -20,7 +22,29 @@ dotenv.config();
 const app = express();
 
 // cors
-app.use(cors());
+app.use(
+    cors({
+        credentials: true,
+        origin: 'http://localhost:3000',
+    })
+);
+
+// enable session support
+const store = new session.MemoryStore();
+
+app.use(
+    session({
+        secret: process.env.ACCESS_TOKEN_SECRET,
+        cookie: {
+            httpOnly: true,
+            path: process.env.HTTP_ONLY_COOKIE_PATH,
+            overwrite: true,
+        },
+        saveUninitialized: true,
+        resave: true,
+        store,
+    })
+);
 
 // disabling the express startup message (not necessary but saves log space in a production app)
 app.disable('x-powered-by');
@@ -37,32 +61,24 @@ app.use(express.urlencoded({ extended: false }));
 // package for logging incoming requests
 app.use(morgan('dev'));
 
-// use express-ejs-layouts for layout templating
-app.use(layouts);
-
-// allow express to serve static files
-app.use(express.static('src/public'));
-
 // set the port variable in express
 app.set('port', process.env.PORT);
 
-// tell express to use the ejs library to render the views
-app.set('view engine', 'ejs');
-
-// tell express to change the default location of the view files
-app.set('views', 'src/views');
+// initialize passportjs authentication
+app.use(passport.initialize());
+app.use(passport.session());
 
 // require a signed in user for all requests
-app.use('/api', protect);
+// app.use('/api', protect);
 
 // routes
 app.use('/auth', authRouter);
 
 app.use('/api/note', noteRouter);
 
-// error logging middleware
-app.use(errorController.respondNoResourceFound);
-app.use(errorController.respondInternalError);
+app.use('/api/notebook', notebookRouter);
+
+app.use('*', (req, res) => res.status(404).json({ error: 'invalid route' }));
 
 // connect to the database and have the app listen on the specified port
 try {

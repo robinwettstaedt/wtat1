@@ -5,7 +5,7 @@ import useAuth from './hooks/useAuth';
 
 function Signin() {
   const navigate = useNavigate();
-  const { token, setToken } = useAuth();
+  const { authenticated, setAuthenticated } = useAuth();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -17,8 +17,12 @@ function Signin() {
       password: password,
     });
 
-    setToken(response.data.accessToken);
-    navigate('/');
+    if (response.status === 200) {
+      setAuthenticated(true);
+      navigate('/notes');
+    } else {
+      alert('Wrong Username and Password combination!');
+    }
   };
 
   const handleUsernameChange = (event) => {
@@ -29,7 +33,7 @@ function Signin() {
     setPassword(event.target.value);
   };
 
-  return token ? (
+  return authenticated ? (
     <>
       <h1>You are already logged in!</h1>
     </>

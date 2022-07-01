@@ -8,10 +8,10 @@ const Nav = () => {
           <Link to="/">Home</Link>
         </li>
         <li>
-          <Link to="notes">Notes</Link>
+          <Link to="notebooks">Notebooks</Link>
         </li>
         <li>
-          <Link to="note">Create New Note</Link>
+          <Link to="notebook">Create New Notebook</Link>
         </li>
         <li>
           <Link to="signin">Login</Link>
