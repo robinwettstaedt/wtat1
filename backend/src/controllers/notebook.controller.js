@@ -1,14 +1,24 @@
-'use strict';
+import { Notebook } from '../models/notebook.model';
 import { Note } from '../models/note.model';
+
+const userHasAccess = (doc, userID) => {
+    const matchingUserID = doc.hasAccess.filter((docUserObj) =>
+        docUserObj._id.equals(userID)
+    );
+
+    if (matchingUserID.length > 0) {
+        return true;
+    }
+    return false;
+};
 
 const getOne = (model) => async (req, res) => {
     try {
-        // .lean() gets back POJO instead of mongoose object
-        // If you're executing a query and sending the results without modification to, say, an Express response, you should use lean.
-        // In general, if you do not modify the query results and do not use custom getters, you should use lean()
         const doc = await model
             .findOne({ _id: req.params.id, hasAccess: req.user._id })
             .select('-__v')
+            .populate('notes', '_id title')
+            .populate('hasAccess', '_id username')
             .lean()
             .exec();
 
@@ -33,57 +43,40 @@ const getOne = (model) => async (req, res) => {
 
 const getMany = (model) => async (req, res) => {
     try {
-        console.log('inside getMany notes');
-        if (req.user) {
-            // find all notes that have the current user as the value of their hasAccess field
-            const notes = await model
-                .find({ hasAccess: req.user._id })
-                .select('-__v')
-                .lean()
-                .exec();
+        const docs = await model
+            .find({ hasAccess: req.user._id })
+            .select('-__v')
+            .populate('notes', '_id title')
+            .populate('hasAccess', '_id username')
+            .lean()
+            .exec();
 
-            if (!notes) {
-                return res.status(404).end();
-            }
-
-            return res.status(200).json(notes);
-        } else {
-            return res.status(401).end();
+        if (!docs) {
+            return res.status(404).end();
         }
+
+        return res.status(200).json(docs);
     } catch (e) {
-        console.log(e);
         return res.status(400).end();
     }
 };
 
 const createOne = (model) => async (req, res) => {
     try {
-        // get the note's data from the request body
-        const note = req.body;
+        console.log('user', req.user);
+        console.log('req.body', req.body);
+        const notebook = req.body;
 
-        // use the user object to populate the note's fields that require a user id
-        note.hasAccess = [req.user._id];
-        note.createdBy = req.user._id;
-        note.lastUpdatedBy = req.user._id;
+        notebook.hasAccess = [req.user._id];
+        notebook.createdBy = req.user._id;
 
-        // create the note in the database
-        const createdNote = await model.create(note);
-
-        // // updating the notebook entry so that it features this note's id
-        // const updatedNotebook = await Notebook.findOneAndUpdate(
-        //     { _id: createdNote.notebook, hasAccess: req.user._id },
-        //     { $push: { notes: createdNote._id } }
-        // ).exec();
-
-        // // update the note's hasAccess to feature everyone in the notebooks hasAccess
-        // createdNote.hasAccess = updatedNotebook.hasAccess;
-
-        // // save the created note
-        // await createdNote.save();
+        const createdDoc = await model.create(notebook);
 
         const doc = await model
-            .findById(createdNote._id)
+            .findById(createdDoc._id)
             .select('-__v')
+            .populate('notes', '_id title')
+            .populate('hasAccess', '_id username')
             .lean()
             .exec();
 
@@ -93,30 +86,35 @@ const createOne = (model) => async (req, res) => {
 
         return res.status(201).json(doc);
     } catch (e) {
+        console.log(e);
         return res.status(400).end();
     }
 };
 
 const updateOne = (model) => async (req, res) => {
     try {
-        const noteUpdates = req.body;
-        noteUpdates.lastUpdatedBy = req.user._id;
+        const notebookUpdates = req.body;
 
         // updates to the hasAccess fields are handled by different routes
-        if (noteUpdates.hasAccess) {
-            delete noteUpdates.hasAccess;
+        if (notebookUpdates.hasAccess) {
+            delete notebookUpdates.hasAccess;
         }
 
         // update the document
         const updatedDoc = await model
             .findOneAndUpdate(
                 { _id: req.params.id, hasAccess: req.user._id },
-                noteUpdates,
-                { new: true }
+                notebookUpdates,
+                {
+                    new: true,
+                }
             )
             .select('-__v')
+            .populate('notes', '_id title')
+            .populate('hasAccess', '_id username')
             .exec();
 
+        // check for the cause of the non existent updated document and return correct error status code
         if (!updatedDoc) {
             const doc = await model.findById(req.params.id).lean().exec();
 
@@ -138,6 +136,8 @@ const removeOne = (model) => async (req, res) => {
         const removed = await model
             .findOneAndRemove({ _id: req.params.id, hasAccess: req.user._id })
             .select('-__v')
+            .populate('notes', '_id title')
+            .populate('hasAccess', '_id username')
             .exec();
 
         if (!removed) {
@@ -160,7 +160,7 @@ const removeFromHasAccess = (model) => async (req, res) => {
     try {
         const doc = await model.findById(req.params.id).lean().exec();
 
-        // only the user that created the note can remove somebody from having access to the notebook
+        // only the user that created the notebook can remove somebody from having access to the notebook
         if (!doc.createdBy.equals(req.user._id)) {
             return res.status(403).end();
         }
@@ -180,12 +180,27 @@ const removeFromHasAccess = (model) => async (req, res) => {
                 }
             )
             .select('-__v')
+            .populate('notes', '_id title')
             .populate('hasAccess', '_id username')
             .exec();
 
         if (!updatedDoc) {
-            return res.status(404).json({ message: 'Note not found' });
+            return res.status(404).json({ message: 'Notebook not found' });
         }
+
+        // iterate over the ids of the notes contained in the Notebook doc and update their hasAccess field
+        const noteUpdates = [];
+
+        updatedDoc.notes.forEach((noteID) => {
+            noteUpdates.push(
+                Note.updateOne(
+                    { _id: noteID },
+                    { $pullAll: { hasAccess: [req.body._id] } }
+                )
+            );
+        });
+
+        await Promise.all(noteUpdates);
 
         return res.status(200).json(updatedDoc);
     } catch (e) {
@@ -197,7 +212,7 @@ const addToHasAccess = (model) => async (req, res) => {
     try {
         const doc = await model.findById(req.params.id).lean().exec();
 
-        // only the user that created the note can add somebody to have access to the notebook
+        // only the user that created the notebook can add somebody to have access to the notebook
         if (!doc.createdBy.equals(req.user._id)) {
             return res.status(403).end();
         }
@@ -217,12 +232,27 @@ const addToHasAccess = (model) => async (req, res) => {
                 }
             )
             .select('-__v')
+            .populate('notes', '_id title')
             .populate('hasAccess', '_id username')
             .exec();
 
         if (!updatedDoc) {
-            return res.status(404).json({ message: 'Note not found' });
+            return res.status(404).json({ message: 'Notebook not found' });
         }
+
+        // iterate over the ids of the notes contained in the Notebook doc and update their hasAccess field
+        const noteUpdates = [];
+
+        updatedDoc.notes.forEach((noteID) => {
+            noteUpdates.push(
+                Note.updateOne(
+                    { _id: noteID },
+                    { $push: { hasAccess: [req.body._id] } }
+                )
+            );
+        });
+
+        await Promise.all(noteUpdates);
 
         return res.status(200).json(updatedDoc);
     } catch (e) {
@@ -230,8 +260,7 @@ const addToHasAccess = (model) => async (req, res) => {
     }
 };
 
-// combine all controllers onto a single object
-const noteController = (model) => ({
+const crudControllers = (model) => ({
     getOne: getOne(model),
     getMany: getMany(model),
     createOne: createOne(model),
@@ -241,4 +270,4 @@ const noteController = (model) => ({
     addToHasAccess: addToHasAccess(model),
 });
 
-export default noteController(Note);
+export default crudControllers(Notebook);

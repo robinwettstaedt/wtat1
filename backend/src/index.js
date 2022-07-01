@@ -11,6 +11,7 @@ import local from './strategies/local';
 // local imports
 import connectToMongoDB from './connection/connectToMongoDB';
 import noteRouter from './routers/note.router';
+import notebookRouter from './routers/notebook.router';
 import authRouter from './routers/auth.router';
 import { protect } from './controllers/auth.controller';
 
@@ -74,6 +75,8 @@ app.use(passport.session());
 app.use('/auth', authRouter);
 
 app.use('/api/note', noteRouter);
+
+app.use('/api/notebook', notebookRouter);
 
 app.use('*', (req, res) => res.status(404).json({ error: 'invalid route' }));
 

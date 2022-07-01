@@ -65,11 +65,8 @@ function Note() {
   };
 
   const handleDelete = async () => {
-    await axios.delete(`http://localhost:5000/api/note/${currentNoteID}`, {
-      title: noteTitle,
-      content: noteContent,
-    });
-    navigate('/notes');
+    await axios.delete(`http://localhost:5000/api/note/${currentNoteID}`);
+    navigate('/notebooks');
   };
 
   return (

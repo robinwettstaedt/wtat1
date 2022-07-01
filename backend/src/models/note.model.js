@@ -14,11 +14,11 @@ export const noteSchema = new mongoose.Schema(
             required: true,
             default: '',
         },
-        // notebook: {
-        //     type: mongoose.SchemaTypes.ObjectId,
-        //     ref: 'notebook',
-        //     required: true,
-        // },
+        notebook: {
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: 'notebook',
+            required: true,
+        },
         hasAccess: {
             type: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'user' }],
             required: true,
