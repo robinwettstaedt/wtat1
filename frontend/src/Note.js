@@ -6,33 +6,13 @@ function Note() {
   let params = useParams();
   const navigate = useNavigate();
 
-  const [currentNoteID, setCurrentNoteID] = useState(params.noteID);
+  const [currentNoteID, setCurrentNoteID] = useState(params.noteId);
 
   const [noteContent, setNoteContent] = useState('');
   const [noteTitle, setNoteTitle] = useState('');
 
   const [editing, setEditing] = useState(false);
   const [isExistingNote, setIsExistingNote] = useState(false);
-
-  const saveNote = async (event) => {
-    event.preventDefault();
-
-    // if the note is one that already existed, send a put request to update the note, otherwise create it
-    if (isExistingNote) {
-      await axios.put(`http://localhost:5000/api/note/${currentNoteID}`, {
-        title: noteTitle,
-        content: noteContent,
-      });
-    } else {
-      const response = await axios.post('http://localhost:5000/api/note', {
-        title: noteTitle,
-        content: noteContent,
-      });
-      setIsExistingNote(true);
-      setCurrentNoteID(response.data._id);
-      navigate(`${currentNoteID}`);
-    }
-  };
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -51,6 +31,27 @@ function Note() {
       fetchNote();
     }
   }, [currentNoteID]);
+
+  const saveNote = async (event) => {
+    event.preventDefault();
+
+    // if the note is one that already existed, send a put request to update the note, otherwise create it
+    if (isExistingNote) {
+      await axios.put(`http://localhost:5000/api/note/${currentNoteID}`, {
+        title: noteTitle,
+        content: noteContent,
+      });
+    } else {
+      const response = await axios.post('http://localhost:5000/api/note', {
+        title: noteTitle,
+        content: noteContent,
+        notebook: params.notebookId,
+      });
+      setIsExistingNote(true);
+      setCurrentNoteID(response.data._id);
+      navigate(`${currentNoteID}`);
+    }
+  };
 
   const handleTitleChange = (event) => {
     setNoteTitle(event.target.value);

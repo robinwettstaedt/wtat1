@@ -1,5 +1,6 @@
 'use strict';
 import { Note } from '../models/note.model';
+import { Notebook } from '../models/notebook.model';
 
 const getOne = (model) => async (req, res) => {
     try {
@@ -69,17 +70,17 @@ const createOne = (model) => async (req, res) => {
         // create the note in the database
         const createdNote = await model.create(note);
 
-        // // updating the notebook entry so that it features this note's id
-        // const updatedNotebook = await Notebook.findOneAndUpdate(
-        //     { _id: createdNote.notebook, hasAccess: req.user._id },
-        //     { $push: { notes: createdNote._id } }
-        // ).exec();
+        // updating the notebook entry so that it features this note's id
+        const updatedNotebook = await Notebook.findOneAndUpdate(
+            { _id: createdNote.notebook, hasAccess: req.user._id },
+            { $push: { notes: createdNote._id } }
+        ).exec();
 
-        // // update the note's hasAccess to feature everyone in the notebooks hasAccess
-        // createdNote.hasAccess = updatedNotebook.hasAccess;
+        // update the note's hasAccess to feature everyone in the notebooks hasAccess
+        createdNote.hasAccess = updatedNotebook.hasAccess;
 
-        // // save the created note
-        // await createdNote.save();
+        // save the created note
+        await createdNote.save();
 
         const doc = await model
             .findById(createdNote._id)
@@ -93,6 +94,7 @@ const createOne = (model) => async (req, res) => {
 
         return res.status(201).json(doc);
     } catch (e) {
+        console.log(e);
         return res.status(400).end();
     }
 };

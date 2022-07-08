@@ -11,7 +11,7 @@ const Nav = () => {
           <Link to="notebooks">Notebooks</Link>
         </li>
         <li>
-          <Link to="notebook">Create New Notebook</Link>
+          <Link to="create-notebook">Create New Notebook</Link>
         </li>
         <li>
           <Link to="signin">Login</Link>

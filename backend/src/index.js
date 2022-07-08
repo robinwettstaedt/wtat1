@@ -4,9 +4,7 @@ import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import passport from 'passport';
-import session from 'express-session';
-import local from './strategies/local';
+import cookieParser from 'cookie-parser';
 
 // local imports
 import connectToMongoDB from './connection/connectToMongoDB';
@@ -21,28 +19,14 @@ dotenv.config();
 // get the app object from express
 const app = express();
 
+// let the app use cookies
+app.use(cookieParser());
+
 // cors
 app.use(
     cors({
         credentials: true,
         origin: 'http://localhost:3000',
-    })
-);
-
-// enable session support
-const store = new session.MemoryStore();
-
-app.use(
-    session({
-        secret: process.env.ACCESS_TOKEN_SECRET,
-        cookie: {
-            httpOnly: true,
-            path: process.env.HTTP_ONLY_COOKIE_PATH,
-            overwrite: true,
-        },
-        saveUninitialized: true,
-        resave: true,
-        store,
     })
 );
 
@@ -64,15 +48,11 @@ app.use(morgan('dev'));
 // set the port variable in express
 app.set('port', process.env.PORT);
 
-// initialize passportjs authentication
-app.use(passport.initialize());
-app.use(passport.session());
-
-// require a signed in user for all requests
-// app.use('/api', protect);
-
 // routes
 app.use('/auth', authRouter);
+
+// require a signed in user for all requests
+app.use('/api', protect);
 
 app.use('/api/note', noteRouter);
 

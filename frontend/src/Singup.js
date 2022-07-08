@@ -5,7 +5,7 @@ import useAuth from './hooks/useAuth';
 
 function Signup() {
   const navigate = useNavigate();
-  const { authenticated, setAuthenticated } = useAuth();
+  const { token, setToken } = useAuth();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,8 +18,12 @@ function Signup() {
     });
 
     if (response.status === 201) {
-      setAuthenticated(true);
-      navigate('/notes');
+      if (response.data.accessToken) {
+        setToken(response.data.accessToken);
+      }
+
+      setToken(true);
+      navigate('/notebooks');
     } else {
       alert('User could not be created! Please try another username.');
     }
@@ -33,7 +37,7 @@ function Signup() {
     setPassword(event.target.value);
   };
 
-  return authenticated ? (
+  return token ? (
     <>
       <h1>You are already logged in!</h1>
     </>
