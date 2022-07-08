@@ -5,7 +5,7 @@ import useAuth from './hooks/useAuth';
 
 function Signin() {
   const navigate = useNavigate();
-  const { authenticated, setAuthenticated } = useAuth();
+  const { token, setToken } = useAuth();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,8 +18,11 @@ function Signin() {
     });
 
     if (response.status === 200) {
-      setAuthenticated(true);
-      navigate('/notes');
+      if (response.data.accessToken) {
+        setToken(response.data.accessToken);
+      }
+
+      navigate('/notebooks');
     } else {
       alert('Wrong Username and Password combination!');
     }
@@ -33,7 +36,7 @@ function Signin() {
     setPassword(event.target.value);
   };
 
-  return authenticated ? (
+  return token ? (
     <>
       <h1>You are already logged in!</h1>
     </>

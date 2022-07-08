@@ -20,12 +20,15 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route element={<RequireAuth />}>
           <Route path="notebooks" element={<Notebooks />} />
-          <Route path="notebook" element={<CreateNotebook />}>
-            <Route path=":notebookId" element={<Notebook />} />
-          </Route>
-          <Route path="notes" element={<Notes />} />
-          <Route path="note" element={<Note />}>
-            <Route path=":noteId" element={<Note />} />
+          <Route path="create-notebook" element={<CreateNotebook />} />
+          <Route path="notebook">
+            <Route path=":notebookId">
+              <Route index element={<Notebook />} />
+              <Route path="notes" element={<Notes />} />
+              <Route path="note" element={<Note />}>
+                <Route path=":noteId" element={<Note />} />
+              </Route>
+            </Route>
           </Route>
         </Route>
       </Route>
