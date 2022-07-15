@@ -19,6 +19,17 @@ dotenv.config();
 // get the app object from express
 const app = express();
 
+// socket io imports
+const http = require('http');
+const server = http.createServer(app);
+const socketio = require('socket.io');
+const io = socketio(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+    },
+});
+
 // let the app use cookies
 app.use(cookieParser());
 
@@ -64,9 +75,18 @@ app.use('*', (req, res) => res.status(404).json({ error: 'invalid route' }));
 try {
     connectToMongoDB();
 
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
         console.log(`REST API on http://localhost:${app.get('port')}`);
     });
 } catch (e) {
     console.error(e);
 }
+
+// socket io
+io.on('connection', (socket) => {
+    console.log('a user connected');
+
+    socket.on('message', (data) => {
+        console.log(data);
+    });
+});
