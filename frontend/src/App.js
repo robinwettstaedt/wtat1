@@ -10,12 +10,14 @@ import Notes from './Notes';
 import Notebook from './Notebook';
 import Notebooks from './Notebooks';
 import CreateNotebook from './CreateNotebook';
+import Chat from './Chat';
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route path="signup" element={<Signup />} />s
+        <Route path="chat" element={<Chat />} />
+        <Route path="signup" element={<Signup />} />
         <Route path="signin" element={<Signin />} />
         <Route path="/" element={<Home />} />
         <Route element={<RequireAuth />}>
